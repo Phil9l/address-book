@@ -9,8 +9,9 @@ Downloads data about friends from social networks (vk.com and twitter) and makes
 `./address_book_console.py --vk 44232785 --twitter 891227432`
 
 ### Options
-* `-v VK_ID` — id of user, whose friends would be imported
-* `-o FILE` — name of CSV file
+* `--vk id` — id of vk.com user, whose friends would be imported
+* `--twitter id` — id of twitter user, whose friends would be imported
+* `--output filename` — name of CSV file
 
 ## Requirements
 * `pip3 install Twitter_API`
