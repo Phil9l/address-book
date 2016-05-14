@@ -1,9 +1,9 @@
 # Address Book
 ## Description
-Downloads data about friends from social networks (vk.com and ???) and makes CSV file for exporting into google contacts.
+Downloads data about friends from social networks (vk.com and twitter) and makes CSV file for exporting into google contacts.
 
 ## Usage
-`python3 address_book.py -vk VK_ID -- [-o FILE -a]`
+`./address_book_console.py --vk VK_ID --twitter Twitter_ID [--output FILE]`
 
 ### Example
 `./address_book_console.py --vk 44232785 --twitter 891227432`
@@ -13,5 +13,5 @@ Downloads data about friends from social networks (vk.com and ???) and makes CSV
 * `-o FILE` — name of CSV file
 
 ## Requirements
-* `pip3 install python-twitter`
+* `pip3 install Twitter_API`
 
