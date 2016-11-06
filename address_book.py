@@ -26,10 +26,14 @@ class AddressBook():
     def merge_friend_list(self):
         return
 
-    def _merge_friend_lists(self, friends):
+    def _merge_friend_lists(self, friends, set_percentage=None):
         result = []
+        init_friends_num = len(friends)
 
         while len(friends) != 0:
+            if set_percentage is not None:
+                set_percentage((init_friends_num - len(friends)) * 100 /
+                               init_friends_num)
             cur_friend = friends.pop(0)
             is_unique = True
             for friend_index in range(len(friends)):
@@ -60,7 +64,7 @@ class AddressBook():
             ]
             return friend_list
         except ValueError:
-            self.__wrong_id()
+            self._wrong_id()
 
     @staticmethod
     def _generate_CSV(csv_fields, friend_list):
