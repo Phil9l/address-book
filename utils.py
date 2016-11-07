@@ -74,7 +74,7 @@ class VK_API:
     def __init__(self):
         self.token = ''
 
-    def __get_request_url(self, method, params, token=''):
+    def _get_request_url(self, method, params, token=''):
         params_string = '&'.join((
             '{}={}'.format(*param) for param in params.items()
         ))
@@ -82,15 +82,15 @@ class VK_API:
             method=method, params=params_string, token=''
         )
 
-    def __send_request(self, method, params, token=''):
-        url = self.__get_request_url(method, params, token)
+    def _send_request(self, method, params, token=''):
+        url = self._get_request_url(method, params, token)
         result = loads(request.urlopen(url).read().decode("utf-8"))
         if 'response' in result:
             return result['response']
         raise ValueError
 
     def get_friends(self, user_id):
-        friends = self.__send_request('friends.get', {
+        friends = self._send_request('friends.get', {
             'user_id': user_id,
             'fields': 'first_name,second_name,phone,bdate,contacts'
         })
@@ -118,8 +118,8 @@ class CSV_Generator:
         self.values = []
 
     def __str__(self):
-        return '{}\n{}\n'.format(self.__get_title_string(),
-                                 '\n'.join(self.__get_values()))
+        return '{}\n{}\n'.format(self.get_title_string(),
+                                 '\n'.join(self._get_values()))
 
     def set_titles(self, **kwargs):
         for key, value in kwargs.items():
@@ -132,14 +132,14 @@ class CSV_Generator:
             if key in self.values[-1]:
                 self.values[-1][key] = value
 
-    def __get_result_fields(self):
+    def _get_result_fields(self):
         return self.fields
 
-    def __get_title_string(self):
+    def get_title_string(self):
         return ','.join([str(self.titles[field]) for field in sorted(
-            self.__get_result_fields())])
+            self._get_result_fields())])
 
-    def __get_values(self):
+    def _get_values(self):
         for value in self.values:
             yield ','.join([str(value[field]) for field in sorted(
-                self.__get_result_fields())])
+                self._get_result_fields())])
