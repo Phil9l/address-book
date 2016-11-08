@@ -15,7 +15,7 @@ import time
 from address_book import AddressBook
 from PyQt5 import QtCore, QtGui, QtWidgets
 from friends import VK_Friend, Twitter_Friend, Friend
-from utils import VK_API, CSV_Generator, Twitter_API
+from utils import VK_API, Twitter_API
 
 
 
@@ -174,6 +174,8 @@ class MyApp(Ui_MainWindow, QtWidgets.QMainWindow, AddressBook):
         self.pushButton_1.clicked.connect(self.merge_friend_list)
         self.pushButton_2.clicked.connect(self.save_CSV)
 
+        self._gui_merge_result = None
+
         self.user_id = 0
 
     def _clear_layout(self, layout):
@@ -187,11 +189,7 @@ class MyApp(Ui_MainWindow, QtWidgets.QMainWindow, AddressBook):
             else:
                 self._clear_layout(item.layout())
 
-    def add_friends_thread(self, comm):
-        method = 'VK' if self.comboBox.currentIndex() == 0 else 'Twitter'
-        comm.signal.emit(json.dumps({'action': 'lock', 'method': method}))
-        friends = self.get_friends()
-        self.friend_list += friends
+    def _add_friends_to_gui(self, friends, comm):
         for index, friend in enumerate(friends):
             fields = []
             for field in self.fields:
@@ -199,14 +197,36 @@ class MyApp(Ui_MainWindow, QtWidgets.QMainWindow, AddressBook):
                     fields.append((self.fields[field],
                                   str(getattr(friend, field))))
             data_dict = {'action': 'add_friend', 'fields': fields,
-                         'title': getattr(friend, self.title_field),
-                         'progress': index * 100 // len(friends)}
+                         'title': getattr(friend, self.title_field)}
             comm.signal.emit(json.dumps(data_dict))
+
+            progress = index * 100 // len(friends)
+            comm.signal.emit(json.dumps({'action': 'set_progress',
+                                         'progress': progress}))
             time.sleep(0.1)
+
+    def add_friends_thread(self, comm):
+        method = 'VK' if self.comboBox.currentIndex() == 0 else 'Twitter'
+        label = "Getting {} friends information.".format(method)
+        comm.signal.emit(json.dumps({'action': 'lock', 'label': label}))
+        friends = self.get_friends()
+        self.friend_list += friends
+        self._add_friends_to_gui(friends, comm)
         comm.signal.emit(json.dumps({'action': 'unlock'}))
 
-    def _merge_friends_thread(self, comm):
-        pass
+    def merge_friends_thread(self, comm):
+        comm.signal.emit(json.dumps({'action': 'lock',
+                                     'label': 'Merging friends'}))
+        comm.signal.emit(json.dumps({'action': 'clear_layout'}))
+        set_percentage = lambda x: comm.signal.emit(json.dumps(
+            {'action': 'set_progress', 'progress': x}))
+        self.friend_list = self._merge_friend_lists(self.friend_list,
+                                                    set_percentage)
+
+        comm.signal.emit(json.dumps({'action': 'lock',
+                                     'label': 'Saving merged friends'}))
+        self._add_friends_to_gui(self.friend_list, comm)
+        comm.signal.emit(json.dumps({'action': 'unlock'}))
 
     def get_friends(self):
         user_id = self.lineEdit.text()
@@ -244,18 +264,26 @@ class MyApp(Ui_MainWindow, QtWidgets.QMainWindow, AddressBook):
         retval = msg_box.exec_()
         return retval == QtWidgets.QMessageBox.Yes
 
+    def _get_gui_merge_result(self):
+        while self._gui_merge_result is None:
+            time.sleep(0.01)
+        result = self._gui_merge_result
+        self._gui_merge_result = None
+        return result
+
     def merge_friend_list(self):
-        self._lock_buttons('Merging friends.')
-        self._clear_layout(self.gridLayout_2)
-        set_percentage = lambda x: self._set_progress(x)
-        self.friend_list = self._merge_friend_lists(self.friend_list,
-                                                    set_percentage)
-        self._unlock_buttons()
+        my_thread = threading.Thread(target=self.merge_friends_thread,
+                                     args=(self.comm,))
+        my_thread.start()
 
     def _merge_friends(self, friend1, friend2):
         question = ('{} and {} seem to be equal. Do you want to '
                     'merge them?').format(friend1.full_name, friend2.full_name)
-        need_merge = self._show_question(question, '', 'Merge friends')
+
+        self.comm.signal.emit(json.dumps({'action': 'ask',
+                                          'params': [question, '',
+                                                     'Merge friends']}))
+        need_merge = self._get_gui_merge_result()
 
         if not need_merge:
             return
@@ -272,9 +300,11 @@ class MyApp(Ui_MainWindow, QtWidgets.QMainWindow, AddressBook):
                     extra_data = 'User1 value: {}\nUser2 value: {}'.format(
                         getattr(friend1, attr), getattr(friend2, attr))
 
-                    res = self._show_question(question, extra_data,
-                                              'Merge Friends',
-                                              ('First', 'Second'))
+                    params = [question, extra_data, 'Merge Friends',
+                              ('First', 'Second')]
+                    self.comm.signal.emit(json.dumps({'action': 'ask',
+                                                      'params': params}))
+                    res = self._get_gui_merge_result()
                     if res:
                         setattr(result, attr, getattr(friend2, attr))
         return result
@@ -282,13 +312,17 @@ class MyApp(Ui_MainWindow, QtWidgets.QMainWindow, AddressBook):
     def _handle_data(self, data):
         data_dict = json.loads(data)
         if data_dict['action'] == 'lock':
-            self._lock_buttons("Getting {} friends information."
-                               .format(data_dict['method']))
+            self._lock_buttons(data_dict['label'])
         elif data_dict['action'] == 'unlock':
             self._unlock_buttons()
-        else:
+        elif data_dict['action'] == 'clear_layout':
+            self._clear_layout(self.gridLayout_2)
+        elif data_dict['action'] == 'ask':
+            self._gui_merge_result = self._show_question(*data_dict['params'])
+        elif data_dict['action'] == 'set_progress':
             progress = data_dict.get('progress', 0)
             self._set_progress(progress)
+        else:
             fields = data_dict['fields']
             title = data_dict['title']
             self.user_id += 1
@@ -299,7 +333,7 @@ class MyApp(Ui_MainWindow, QtWidgets.QMainWindow, AddressBook):
                                      args=(self.comm,))
         my_thread.start()
 
-    def save_CSV(self):
+    def save_CSV(self, filename=None):
         filename = QtWidgets.QFileDialog.getSaveFileName(self, 'Dialog Title',
                                                          'contacts.csv')
         if filename[0]:
