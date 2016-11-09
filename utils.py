@@ -61,7 +61,11 @@ def get_input(question, choice=('y', 'n')):
 
 def equal(val1, val2):
     if isinstance(val1, str) and isinstance(val2, str):
-        return 1 - (distance(val1, val2) / max(len(val1), len(val2)))**(1/5)
+        return 1 - (distance(val1, val2) / max(len(val1), len(val2)))**(3/5)
+    return val1 == val2
+
+
+def absolutely_equal(val1, val2):
     return val1 == val2
 
 

@@ -242,8 +242,10 @@ class MyApp(Ui_MainWindow, QtWidgets.QMainWindow, AddressBook):
             ]
             return friend_list
         except ValueError:
-            QtWidgets.QMessageBox.critical(self, 'Wrong ID',
-                                           'No user with such id found.')
+            self.comm.signal.emit(json.dumps({'action': 'error',
+                                              'title': 'Wrong ID',
+                                              'data': ('No user with such id '
+                                                       'found.')}))
             return []
 
     @staticmethod
@@ -322,6 +324,9 @@ class MyApp(Ui_MainWindow, QtWidgets.QMainWindow, AddressBook):
         elif data_dict['action'] == 'set_progress':
             progress = data_dict.get('progress', 0)
             self._set_progress(progress)
+        elif data_dict['action'] == 'error':
+            QtWidgets.QMessageBox.critical(self, data_dict['title'],
+                                           data_dict['data'])
         else:
             fields = data_dict['fields']
             title = data_dict['title']
@@ -347,6 +352,8 @@ class MyApp(Ui_MainWindow, QtWidgets.QMainWindow, AddressBook):
 if __name__ == "__main__":
     csv_fields = {
         'full_name': 'Name',
+        'first_name': 'First Name',
+        'last_name': 'Last Name',
         'bdate': 'Birthday',
         'phone': 'Mobile Phone',
         'email': 'E-mail Address',

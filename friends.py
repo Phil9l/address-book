@@ -1,20 +1,20 @@
 from utils import extract_phone, extract_date, normalize_name
-from utils import equal, extract_name_parts
+from utils import equal, extract_name_parts, absolutely_equal
 from utils import Twitter_API
 
-MINIMUM_SIMILARITY = 0.7
+MINIMUM_SIMILARITY = 0.80
 
 
 class Friend:
     __fields = (
         ('full_name', (0.5, equal)), ('first_name', (0.03, equal)),
-        ('last_name', (0.12, equal)), ('bdate', (0.2, equal)),
-        ('phone', (0.15, equal)),
+        ('last_name', (0.12, equal)), ('bdate', (0.2, absolutely_equal)),
+        ('phone', (0.15, absolutely_equal)),
     )
-    __field_dict = dict(__fields)
+    _field_dict = dict(__fields)
 
     def __init__(self, **kwargs):
-        for field in self.__field_dict:
+        for field in self._field_dict:
             setattr(self, field, kwargs.get(field, ''))
 
     def __repr__(self):
@@ -30,7 +30,7 @@ class Friend:
         ) for key, val in vars(self).items())
 
     @staticmethod
-    def __fields_equal(val1, val2, eq_function):
+    def _fields_equal(val1, val2, eq_function):
         if val1 == '' or val2 == '' or val1 == [] or val2 == []:
             return 1
         return eq_function(val1, val2)
@@ -49,18 +49,16 @@ class Friend:
 
     def is_similar(self, other):
         similarity = 0
-        for key, value in self.__field_dict.items():
+        for key, value in self._field_dict.items():
             coef, eq = value
-            similarity += coef * (self.__fields_equal(getattr(self, key),
-                                                      getattr(other, key), eq))
+            similarity += coef * (self._fields_equal(getattr(self, key),
+                                                     getattr(other, key), eq))
         return similarity >= MINIMUM_SIMILARITY
 
     def is_subset(self, other):
         for field in vars(self):
-            if (
-                getattr(other, field) != '' and
-                getattr(self, field) != getattr(other, field)
-            ):
+            if getattr(other, field) != '' and \
+               getattr(self, field) != getattr(other, field):
                 return False
         return True
 
@@ -88,7 +86,7 @@ class Twitter_Friend(Friend):
             'last_name': normalize_name(extract_name_parts(
                 kwargs.get('name', ''))[1]),
             'friends': api.get_friends(
-                kwargs.get('id', ''), grab_friends=False
+                kwargs.get('id', ''),
             ) if grab_friends else []
         }
         user_data['full_name'] = normalize_name('{} {}'.format(

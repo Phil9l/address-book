@@ -4,6 +4,7 @@ import unittest
 from datetime import datetime
 from utils import (distance, extract_name_parts, extract_phone, extract_date,
                    normalize_name, CSV_Generator)
+from friends import Friend
 
 
 class TestUtlis(unittest.TestCase):
@@ -58,6 +59,98 @@ class TestUtlis(unittest.TestCase):
         expected_result = 'A,B,C\n1,2,3\n11,12,13\n'
 
         self.assertEqual(result, expected_result)
+
+
+class TestMergerUtils(unittest.TestCase):
+    def test_is_mergeble_with_empty(self):
+        friend1 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         second_name='Ipsum', phone='+7904424242')
+        friend2 = Friend()
+        self.assertEqual(friend1.is_mergeble(friend2), True)
+
+    def test_is_mergeble_with_subset(self):
+        friend1 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         second_name='Ipsum', phone='+7904424242')
+        friend2 = Friend(full_name='Lorem Ipsum', first_name='Lorem',)
+        self.assertEqual(friend1.is_mergeble(friend2), True)
+
+    def test_is_mergeble_with_empty_fields(self):
+        friend1 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         second_name='Ipsum', phone='+7904424242')
+        friend2 = Friend(full_name='', first_name='',)
+        self.assertEqual(friend1.is_mergeble(friend2), True)
+
+    def test_is_mergeble_wrong(self):
+        friend1 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         second_name='Ipsum', phone='+7904424242')
+        friend2 = Friend(full_name='1', first_name='Lorem',)
+        self.assertEqual(friend1.is_mergeble(friend2), False)
+
+    def test_is_subset(self):
+        friend1 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         second_name='Ipsum', phone='+7904424242')
+        friend2 = Friend(full_name='', first_name='Lorem',)
+        self.assertEqual(friend1.is_mergeble(friend2), True)
+
+    def test_is_subset_wrong(self):
+        friend1 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         second_name='Ipsum', phone='+7904424242')
+        friend2 = Friend(full_name='Ipsum', first_name='Lorem',)
+        self.assertEqual(friend1.is_mergeble(friend2), False)
+
+
+class TestMerging(unittest.TestCase):
+    def test_auto_merging_with_empty(self):
+        friend1 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         second_name='Ipsum', phone='+7904424242')
+        friend2 = Friend()
+        self.assertEqual(friend1.merge(friend2), friend1)
+
+    def test_auto_merging_with_subset(self):
+        friend1 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         second_name='Ipsum', phone='+7904424242')
+        friend2 = Friend(full_name='Lorem Ipsum', first_name='Lorem',)
+        self.assertEqual(friend1.merge(friend2), friend1)
+
+    def test_auto_merging_with_empty_fields(self):
+        friend1 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         second_name='Ipsum', phone='+7904424242')
+        friend2 = Friend(full_name='', first_name='',)
+        self.assertEqual(friend1.merge(friend2), friend1)
+
+    def test_is_similar1(self):
+        friend1 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         second_name='Ipsum', phone='+7904424242')
+        friend2 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         second_name='Ipsum', phone='+7904424242')
+        self.assertEqual(friend1.is_similar(friend2), True)
+
+    def test_is_similar2(self):
+        friend1 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         second_name='Ipsum', phone='+7904424242')
+        friend2 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         second_name='Ipsum', phone='')
+        self.assertEqual(friend1.is_similar(friend2), True)
+
+    def test_is_similar3(self):
+        friend1 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         second_name='Ipsum', phone='+7904424242')
+        friend2 = Friend(full_name='Lorem Ipsum', first_name='Lorem')
+        self.assertEqual(friend1.is_similar(friend2), True)
+
+    def test_is_similar4(self):
+        friend1 = Friend(full_name='Lora Ipsim', first_name='Lora',
+                         second_name='Ipsim')
+        friend2 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         phone='+7904424242')
+        self.assertEqual(friend1.is_similar(friend2), True)
+
+    def test_is_similar5(self):
+        friend1 = Friend(full_name='Lora Ipsim', first_name='Lora',
+                         second_name='Ipsimasdasdsa', phone='+72283222131')
+        friend2 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
+                         phone='+7904424242')
+        self.assertEqual(friend1.is_similar(friend2), False)
 
 
 if __name__ == '__main__':
