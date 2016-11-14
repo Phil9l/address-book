@@ -3,7 +3,7 @@
 import unittest
 from datetime import datetime
 from utils import (distance, extract_name_parts, extract_phone, extract_date,
-                   normalize_name, CSV_Generator)
+                   normalize_name, CSV_Generator, translit)
 from friends import Friend
 
 
@@ -59,6 +59,13 @@ class TestUtlis(unittest.TestCase):
         expected_result = 'A,B,C\n1,2,3\n11,12,13\n'
 
         self.assertEqual(result, expected_result)
+
+    def test_translit(self):
+        self.assertEqual(translit('olia'), 'оля')
+        self.assertEqual(translit('misha'), 'миша')
+        self.assertEqual(translit('lorem ipsum'), 'лорем ипсум')
+        self.assertEqual(translit('some string'), 'соме стринг')
+        self.assertEqual(translit('fish sticks'), 'фиш стиcкс')
 
 
 class TestMergerUtils(unittest.TestCase):

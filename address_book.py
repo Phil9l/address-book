@@ -30,7 +30,7 @@ class AddressBook():
         result = []
         init_friends_num = len(friends)
 
-        while len(friends) != 0:
+        while friends:
             if set_percentage is not None:
                 set_percentage((init_friends_num - len(friends)) * 100 /
                                init_friends_num)
@@ -59,9 +59,8 @@ class AddressBook():
 
     def _get_friends(self, user_id, api, friend_class):
         try:
-            friend_list = [
-                friend_class(**friend) for friend in api.get_friends(user_id)
-            ]
+            friend_list = [friend_class(**friend)
+                           for friend in api.get_friends(user_id)]
             return friend_list
         except ValueError:
             self._wrong_id()

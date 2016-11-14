@@ -1,6 +1,5 @@
-from utils import extract_phone, extract_date, normalize_name
-from utils import equal, extract_name_parts, absolutely_equal
-from utils import Twitter_API
+from utils import (extract_phone, extract_date, normalize_name, equal,
+                   extract_name_parts, absolutely_equal, Twitter_API)
 
 MINIMUM_SIMILARITY = 0.80
 

@@ -1,16 +1,56 @@
+import sys
 from urllib import request
 from json import loads
 from datetime import datetime
-from TwitterAPI import TwitterAPI
+from TwitterAPI import TwitterAPI, TwitterError
 
 
 def translit(string):
-    '''Translitiration based on Passport (2013), ICAO standart'''
+    string = string.lower()
+    """
+    Translitiration of english string to russian one based on Passport (2013),
+    ICAO standart
+    """
+    mapping = {
+        'a': 'а',
+        'b': 'б',
+        'v': 'в',
+        'g': 'г',
+        'd': 'д',
+        'e': 'е',
+        'zh': 'ж',
+        'z': 'з',
+        'i': 'и',
+        'k': 'к',
+        'l': 'л',
+        'm': 'м',
+        'n': 'н',
+        'o': 'о',
+        'p': 'п',
+        'r': 'р',
+        's': 'с',
+        't': 'т',
+        'u': 'у',
+        'f': 'ф',
+        'kh': 'х',
+        'ts': 'ц',
+        'ch': 'ч',
+        'sh': 'ш',
+        'shch': 'щ',
+        'ie': 'ъ',
+        'y': 'ы',
+        'iu': 'ю',
+        'ia': 'я'
+    }
+
+    for eng, rus in sorted(mapping.items(), key=lambda x: -len(x[0])):
+        string = string.replace(eng, rus)
+
     return string
 
 
 def distance(a, b):
-    '''Calculates the Levenshtein distance between a and b.'''
+    """Calculates the Levenshtein distance between a and b."""
     n, m = len(a), len(b)
     if n > m:
         a, b = b, a

@@ -16,4 +16,4 @@ or
 * `--output filename` — name of CSV file
 
 ## Requirements
-* `pip3 install Twitter_API`
+* `pip3 install TwitterAPI`
