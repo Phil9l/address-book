@@ -2,7 +2,7 @@ import abc
 from utils import CSV_Generator
 
 
-class AddressBook():
+class AddressBook(object):
     def __init__(self):
         pass
 
@@ -19,7 +19,7 @@ class AddressBook():
         return
 
     @abc.abstractmethod
-    def _merge_friends(self, frined1, friend2):
+    def _merge_friends(self, friend1, friend2):
         return
 
     @abc.abstractmethod

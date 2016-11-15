@@ -5,12 +5,12 @@ MINIMUM_SIMILARITY = 0.80
 
 
 class Friend:
-    __fields = (
+    _fields = (
         ('full_name', (0.5, equal)), ('first_name', (0.03, equal)),
         ('last_name', (0.12, equal)), ('bdate', (0.2, absolutely_equal)),
         ('phone', (0.15, absolutely_equal)),
     )
-    _field_dict = dict(__fields)
+    _field_dict = dict(_fields)
 
     def __init__(self, **kwargs):
         for field in self._field_dict:
