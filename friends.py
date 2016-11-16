@@ -9,6 +9,9 @@ class Friend:
         ('full_name', (0.5, equal)), ('first_name', (0.03, equal)),
         ('last_name', (0.12, equal)), ('bdate', (0.2, absolutely_equal)),
         ('phone', (0.15, absolutely_equal)),
+        ('site', (0, absolutely_equal)),
+        ('nickname', (0, absolutely_equal)),
+        ('city', (0, absolutely_equal)),
     )
     _field_dict = dict(_fields)
 
@@ -72,6 +75,8 @@ class VK_Friend(Friend):
             'last_name': normalize_name(kwargs.get('last_name', '')),
             'bdate': extract_date(kwargs.get('bdate', '')),
             'phone': extract_phone(kwargs.get('home_phone', '')),
+            'nickname': kwargs.get('nickname', ''),
+            'site': kwargs.get('site', ''),
         }
         super().__init__(**user_data)
 

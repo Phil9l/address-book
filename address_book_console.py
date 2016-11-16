@@ -116,6 +116,8 @@ if __name__ == '__main__':
         'bdate': 'Birthday',
         'phone': 'Mobile Phone',
         'email': 'E-mail Address',
+        'site': 'Site',
+        'nickname': 'Nickname',
     }
     app = MyApp(csv_fields, vk_id=argsuments.vk_id,
                 twitter_id=argsuments.twitter_id)

@@ -136,8 +136,11 @@ class VK_API:
     def get_friends(self, user_id):
         friends = self._send_request('friends.get', {
             'user_id': user_id,
-            'fields': 'first_name,second_name,phone,bdate,contacts'
+            'fields': ('first_name,second_name,phone,bdate,'
+                       'contacts,site,nickname')
         })
+        from pprint import pprint
+        pprint(friends)
         return friends
 
 

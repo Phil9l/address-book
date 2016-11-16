@@ -220,6 +220,8 @@ if __name__ == "__main__":
         'bdate': 'Birthday',
         'phone': 'Mobile Phone',
         'email': 'E-mail Address',
+        'site': 'Site',
+        'nickname': 'Nickname',
     }
     app = QtWidgets.QApplication(sys.argv)
     window = MyApp('full_name', csv_fields)
