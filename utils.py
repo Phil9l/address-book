@@ -100,6 +100,8 @@ def get_input(question, choice=('y', 'n')):
 
 
 def equal(val1, val2):
+    val1 = normalize_name(val1)
+    val2 = normalize_name(val2)
     if isinstance(val1, str) and isinstance(val2, str):
         return 1 - (distance(val1, val2) / max(len(val1), len(val2)))**(3/5)
     return val1 == val2
@@ -139,8 +141,6 @@ class VK_API:
             'fields': ('first_name,second_name,phone,bdate,'
                        'contacts,site,nickname')
         })
-        from pprint import pprint
-        pprint(friends)
         return friends
 
 

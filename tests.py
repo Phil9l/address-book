@@ -40,10 +40,10 @@ class TestUtlis(unittest.TestCase):
         self.assertEqual(extract_date(''), '')
 
     def test_name_normalisation(self):
-        self.assertEqual(normalize_name('Ivan Petrov'), 'Ivan Petrov')
-        self.assertEqual(normalize_name('ivan petrov'), 'Ivan Petrov')
-        self.assertEqual(normalize_name('iVaN pEtRoV'), 'Ivan Petrov')
-        self.assertEqual(normalize_name('  iVaN pEtRoV  '), 'Ivan Petrov')
+        self.assertEqual(normalize_name('Ivan Petrov'), 'Иван Петров')
+        self.assertEqual(normalize_name('ivan petrov'), 'Иван Петров')
+        self.assertEqual(normalize_name('iVaN pEtRoV'), 'Иван Петров')
+        self.assertEqual(normalize_name('  iVaN pEtRoV  '), 'Иван Петров')
 
     def test_csv_generator(self):
         csv_fields = {
@@ -146,7 +146,7 @@ class TestMerging(unittest.TestCase):
         self.assertEqual(friend1.is_similar(friend2), True)
 
     def test_is_similar4(self):
-        friend1 = Friend(full_name='Lora Ipsim', first_name='Lora',
+        friend1 = Friend(full_name='Lore Ipsim', first_name='Lore',
                          second_name='Ipsim')
         friend2 = Friend(full_name='Lorem Ipsum', first_name='Lorem',
                          phone='+7904424242')

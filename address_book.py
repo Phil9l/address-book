@@ -26,11 +26,14 @@ class AddressBook(object):
     def merge_friend_list(self):
         return
 
-    def _merge_friend_lists(self, friends, set_percentage=None):
+    def _merge_friend_lists(self, friends, set_percentage=None,
+                            is_stopped=None):
         result = []
         init_friends_num = len(friends)
 
         while friends:
+            if is_stopped is not None and is_stopped():
+                break
             if set_percentage is not None:
                 set_percentage((init_friends_num - len(friends)) * 100 /
                                init_friends_num)

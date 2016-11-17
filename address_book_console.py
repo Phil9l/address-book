@@ -39,7 +39,7 @@ def file_open(filename=None):
 
 class MyApp(AddressBook):
     def __init__(self, csv_fields, vk_id=None, twitter_id=None):
-        sys.stderr.write('Initializing...\n')
+        print('Initializing...', file=sys.stderr)
         super(MyApp, self).__init__()
         self.vk_id = vk_id
         self.twitter_id = twitter_id
@@ -47,10 +47,9 @@ class MyApp(AddressBook):
         self.csv_fields = csv_fields
 
     def _wrong_id(self):
-        sys.stderr.write('Wrong ID\n'.format())
+        print('Wrong ID', file=sys.stderr)
         if get_input('Do you want to continue?') == 'n':
-            exit(1)
-
+            sys.exit(1)
 
     def save_CSV(self, filename=None):
         with file_open(filename) as f:
@@ -58,12 +57,12 @@ class MyApp(AddressBook):
 
     def get_friends(self):
         if self.vk_id is not None:
-            sys.stderr.write('Getting VK friends...\n')
+            print('Getting VK friends...', file=sys.stderr)
             self.friend_list = self._get_friends(self.vk_id, VK_API(),
                                                  VK_Friend)
         try:
             if self.twitter_id is not None:
-                sys.stderr.write('Getting Twitter friends...\n')
+                print('Getting Twitter friends...', file=sys.stderr)
                 self.friend_list += self._get_friends(self.twitter_id,
                                                       Twitter_API(),
                                                       Twitter_Friend)
@@ -71,15 +70,17 @@ class MyApp(AddressBook):
             self._wrong_id()
 
     def _merge_friends(self, friend1, friend2):
-        sys.stderr.write('These friends seem to be equal.\n')
-        sys.stdout.write('First friend:\n')
-        sys.stdout.write(str(friend1))
-        sys.stdout.write('\n__________________\n')
-        sys.stdout.write('Second friend:\n')
-        sys.stdout.write(str(friend2))
-        if get_input('\nDo you want to merge them?') != 'y':
+        print('These friends seem to be equal.', file=sys.stderr)
+        print('''First friend
+{}
+_______________
+Second friend:
+{}
+'''.format(str(friend1), str(friend2)))
+
+        if get_input('Do you want to merge them?') != 'y':
             return None
-        sys.stdout.write('\n')
+        print('\n', file=sys.stderr)
 
         result = Friend(**vars(friend1))
         for attr in vars(friend1):
@@ -89,11 +90,10 @@ class MyApp(AddressBook):
                 elif getattr(friend2, attr) == '':
                     setattr(result, attr, getattr(friend1, attr))
                 else:
-                    sys.stdout.write('Difference in {} field:\n'.format(
+                    print('Difference in {} field:\n'.format(
                         self.csv_fields[attr]))
-                    sys.stdout.write(
-                        'User1 value: {} | User2 value: {}\n'.format(
-                            getattr(friend1, attr), getattr(friend2, attr)))
+                    print('User1 value: {} | User2 value: {}\n'.format(
+                        getattr(friend1, attr), getattr(friend2, attr)))
                     res = get_input('What field is preferable?', ('1', '2'))
                     if res == '2':
                         setattr(result, attr, getattr(friend2, attr))
@@ -101,14 +101,17 @@ class MyApp(AddressBook):
         return result
 
     def merge_friend_list(self):
-        sys.stderr.write('Merging friends...\n')
-        set_percentage = lambda x: sys.stderr.write('{}%\r'.format(int(x)))
+        print('Merging friends...\n', file=sys.stderr)
+
+        def _set_percentage(x):
+            print('{}%\r'.format(int(x)), file=sys.stderr, end='')
+
         self.friend_list = self._merge_friend_lists(self.friend_list,
-                                                    set_percentage)
+                                                    _set_percentage)
 
 
 if __name__ == '__main__':
-    argsuments = get_arguments()
+    arguments = get_arguments()
     csv_fields = {
         'full_name': 'Name',
         'first_name': 'First Name',
@@ -119,8 +122,8 @@ if __name__ == '__main__':
         'site': 'Site',
         'nickname': 'Nickname',
     }
-    app = MyApp(csv_fields, vk_id=argsuments.vk_id,
-                twitter_id=argsuments.twitter_id)
+    app = MyApp(csv_fields, vk_id=arguments.vk_id,
+                twitter_id=arguments.twitter_id)
     app.get_friends()
     app.merge_friend_list()
-    app.save_CSV(argsuments.output)
+    app.save_CSV(arguments.output)

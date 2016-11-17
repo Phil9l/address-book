@@ -1,4 +1,4 @@
-from utils import (extract_phone, extract_date, normalize_name, equal,
+from utils import (extract_phone, extract_date, equal,
                    extract_name_parts, absolutely_equal, Twitter_API)
 
 MINIMUM_SIMILARITY = 0.80
@@ -68,11 +68,11 @@ class Friend:
 class VK_Friend(Friend):
     def __init__(self, **kwargs):
         user_data = {
-            'full_name': normalize_name('{} {}'.format(
+            'full_name': '{} {}'.format(
                 kwargs.get('last_name', ''), kwargs.get('first_name', '')
-            )),
-            'first_name': normalize_name(kwargs.get('first_name', '')),
-            'last_name': normalize_name(kwargs.get('last_name', '')),
+            ),
+            'first_name': kwargs.get('first_name', ''),
+            'last_name': kwargs.get('last_name', ''),
             'bdate': extract_date(kwargs.get('bdate', '')),
             'phone': extract_phone(kwargs.get('home_phone', '')),
             'nickname': kwargs.get('nickname', ''),
@@ -85,16 +85,16 @@ class Twitter_Friend(Friend):
     def __init__(self, grab_friends=False, **kwargs):
         api = Twitter_API()
         user_data = {
-            'first_name': normalize_name(extract_name_parts(
-                kwargs.get('name', ''))[0]),
-            'last_name': normalize_name(extract_name_parts(
-                kwargs.get('name', ''))[1]),
+            'first_name': extract_name_parts(
+                kwargs.get('name', ''))[0],
+            'last_name': extract_name_parts(
+                kwargs.get('name', ''))[1],
             'friends': api.get_friends(
                 kwargs.get('id', ''),
             ) if grab_friends else []
         }
-        user_data['full_name'] = normalize_name('{} {}'.format(
+        user_data['full_name'] = '{} {}'.format(
             user_data.get('last_name', ''),
             user_data.get('first_name', '')
-        ))
+        )
         super().__init__(**user_data)

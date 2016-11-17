@@ -35,12 +35,21 @@ class MyApp(Ui_MainWindow, QtWidgets.QMainWindow, AddressBook):
         self.pushButton_2.clicked.connect(self.save_CSV)
 
         self._gui_merge_result = None
+        self._is_stopped = threading.Event()
 
         self.user_id = 0
+
+    def _stopped(self):
+        return self._is_stopped.isSet()
+
+    def _stop(self):
+        self._is_stopped.set()
 
     def _clear_layout(self, layout):
         self.user_id = 0
         for i in reversed(range(layout.count())):
+            if self._stopped():
+                break
             item = layout.itemAt(i)
             if isinstance(item, QtWidgets.QWidgetItem):
                 item.widget().setParent(None)
@@ -51,6 +60,8 @@ class MyApp(Ui_MainWindow, QtWidgets.QMainWindow, AddressBook):
 
     def _add_friends_to_gui(self, friends, comm):
         for index, friend in enumerate(friends):
+            if self._stopped():
+                break
             fields = []
             for field in self.fields:
                 if hasattr(friend, field) and getattr(friend, field) != '':
@@ -65,6 +76,9 @@ class MyApp(Ui_MainWindow, QtWidgets.QMainWindow, AddressBook):
                                          'progress': progress}))
             time.sleep(0.1)
 
+    def closeEvent(self, event):
+        self._stop()
+
     def add_friends_thread(self, comm):
         method = 'VK' if self.comboBox.currentIndex() == 0 else 'Twitter'
         label = "Getting {} friends information.".format(method)
@@ -78,10 +92,14 @@ class MyApp(Ui_MainWindow, QtWidgets.QMainWindow, AddressBook):
         comm.signal.emit(json.dumps({'action': 'lock',
                                      'label': 'Merging friends'}))
         comm.signal.emit(json.dumps({'action': 'clear_layout'}))
-        set_percentage = lambda x: comm.signal.emit(json.dumps(
-            {'action': 'set_progress', 'progress': x}))
+
+        def _set_percentage(x):
+            comm.signal.emit(json.dumps({'action': 'set_progress',
+                                         'progress': x}))
+
         self.friend_list = self._merge_friend_lists(self.friend_list,
-                                                    set_percentage)
+                                                    _set_percentage,
+                                                    self._stopped())
 
         comm.signal.emit(json.dumps({'action': 'lock',
                                      'label': 'Saving merged friends'}))
@@ -199,6 +217,7 @@ class MyApp(Ui_MainWindow, QtWidgets.QMainWindow, AddressBook):
     def add_friends(self):
         my_thread = threading.Thread(target=self.add_friends_thread,
                                      args=(self.comm,))
+        my_thread.daemon = True
         my_thread.start()
 
     def save_CSV(self, filename=None):
