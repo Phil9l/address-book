@@ -10,7 +10,7 @@ from TwitterAPI import TwitterError
 
 
 def get_arguments():
-    parser = ArgumentParser(description='usage: %prog [options]')
+    parser = ArgumentParser(description='usage: %(prog) [options]')
     group = parser.add_argument_group()
     group.add_argument('-v', '--vk', dest='vk_id', type=int,
                        help='vk user ID (e.g. 44232785)', metavar='id')
